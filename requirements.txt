@@ -1,3 +1,6 @@
 argparse
+aiohttp
+pyyaml
 dnspython
+pyfiglet
 requests

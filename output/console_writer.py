@@ -20,10 +20,10 @@ def is_valid_subdomain(subdomain):
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.resolver.Timeout, dns.resolver.NoNameservers):
         return False
 
-def write_to_console(subdomains, colorize=True):
+def write_to_console(subdomains, colorize=True, ports=None, port_results=None, verbose=False):
     """
     Write subdomains to the console in a clean and readable format.
-    Categorize subdomains into valid, invalid, and wildcard groups.
+    Categorize subdomains into valid (with open ports), invalid, and wildcard groups.
     """
     # Clean and ensure subdomains are unique
     cleaned_subdomains = clean_subdomains(subdomains)
@@ -48,10 +48,14 @@ def write_to_console(subdomains, colorize=True):
     # Print summary
     print(f"\n[+] Found {len(sorted_subdomains)} unique subdomains:\n")
 
-    # Print valid subdomains
+    # Print valid subdomains with open ports
     print(f"[+] Valid Subdomains ({len(valid_subdomains)}):")
     for subdomain in valid_subdomains:
-        print(subdomain)
+        if port_results and subdomain in port_results:
+            open_ports = port_results[subdomain]
+            print(f"{subdomain} (Open Ports: {', '.join(map(str, open_ports))})")
+        else:
+            print(subdomain)
 
     # Print invalid subdomains
     print(f"\n[+] Invalid Subdomains ({len(invalid_subdomains)}):")

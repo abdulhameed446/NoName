@@ -1,0 +1,25 @@
+# Subdomains for deepseek.com
+
+*.deepseek.com
+*.yinghuo.deepseek.com
+api-openai-us1.deepseek.com
+api-test.deepseek.com
+api.cocopilot.deepseek.com
+api.deepseek.com
+attack.deepseek.com
+beta20240807.chat-test.deepseek.com
+beta20240807.chat.deepseek.com
+chat-test.deepseek.com
+chat.deepseek.com
+coder.deepseek.com
+copilot-telemetry-service.cocopilot.deepseek.com
+deepseek.com
+en.deepseek.com
+gitlab.deepseek.com
+platform-test.deepseek.com
+platform.deepseek.com
+status.deepseek.com
+studio-hg.yinghuo.deepseek.com
+studio.yinghuo.deepseek.com
+test.deepseek.com
+www.deepseek.com

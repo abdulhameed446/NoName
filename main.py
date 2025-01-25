@@ -15,7 +15,7 @@ def display_banner():
     Display a colorful ASCII banner with the tool name and developer information.
     """
     # Create a larger banner
-    banner = pyfiglet.figlet_format("NoName", font="slant", width=100)  # Adjusted width for better readability
+    banner = pyfiglet.figlet_format("NoName", font="slant", width=800)  # Adjusted width for better readability
     colored_banner = colored(banner, "cyan")  # Set the banner color to cyan
 
     # Display the colored banner
@@ -57,6 +57,7 @@ def parse_args():
     )
     return parser.parse_args()
 
+# main.py
 async def main():
     """
     Main function to orchestrate subdomain enumeration and scanning.
@@ -66,6 +67,7 @@ async def main():
 
     # Parse command-line arguments
     args = parse_args()
+    print(f"Parsed arguments: {args}")
 
     # Load configuration
     try:
@@ -91,6 +93,7 @@ async def main():
 
     # Load plugins
     try:
+        print(f"Loading plugins...")
         plugins = load_plugins()
     except Exception as e:
         logger.error(f"Error loading plugins: {e}")
@@ -102,14 +105,19 @@ async def main():
         if enabled and engine_name in plugins:
             try:
                 engine = plugins[engine_name](config["domain"], config["api_keys"].get(engine_name))
-                tasks.append(engine.enumerate())
+                tasks.append(asyncio.wait_for(engine.enumerate(), timeout=30))  # Set timeout for each task
             except Exception as e:
                 logger.error(f"Error initializing {engine_name} engine: {e}")
 
     # Gather results from all engines
     try:
-        results = await asyncio.gather(*tasks)
-        subdomains = set().union(*results)
+        results = await asyncio.gather(*tasks, return_exceptions=True)  # Handle exceptions
+        subdomains = set()
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error(f"Error during enumeration: {result}")
+            else:
+                subdomains.update(result)
     except Exception as e:
         logger.error(f"Error during subdomain enumeration: {e}")
         return
@@ -133,19 +141,20 @@ async def main():
         except Exception as e:
             logger.error(f"Error writing to file: {e}")
 
-    # Write results to console
-    try:
-        write_to_console(subdomains, colorize=not args.no_color)
-    except Exception as e:
-        logger.error(f"Error writing to console: {e}")
-
     # Scan ports if specified
+    port_results = {}
     if config.get("ports"):
         try:
-            scanner = PortScanner(subdomains, config["ports"])
-            scanner.run()
+            scanner = PortScanner(subdomains, config["ports"], config["verbose"])
+            port_results = scanner.run()  # Capture port scanning results
         except Exception as e:
             logger.error(f"Error during port scanning: {e}")
 
+    # Write results to console
+    try:
+        write_to_console(subdomains, colorize=not args.no_color, ports=config.get("ports"), port_results=port_results, verbose=config["verbose"])
+    except Exception as e:
+        logger.error(f"Error writing to console: {e}")
+        
 if __name__ == "__main__":
     asyncio.run(main())

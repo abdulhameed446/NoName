@@ -10,4 +10,6 @@ def load_plugins(plugin_dir="engines"):
             module = importlib.import_module(f"{plugin_dir}.{module_name}")
             if hasattr(module, "Engine"):
                 plugins[module_name] = module.Engine
+                print(f"Loaded engine: {plugins[module_name]}")
+
     return plugins
